@@ -1,0 +1,43 @@
+version: '3'
+services:
+  nginx:
+    image: docker.io/nginx
+    volumes:
+      - ./nginx/nginx.conf:/home/azzam/docker-compose-project/java-login-app/nginx
+    ports:
+      - "80:80"
+
+  
+  tomcat:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    depends_on:
+      - mysql
+
+  mysql:
+    image: mysql:latest
+    environment:
+      MYSQL_ROOT_PASSWORD: root_password
+      MYSQL_DATABASE: your_database
+      MYSQL_USER: your_user
+      MYSQL_PASSWORD: your_password
+    ports:
+      - "3306:3306"
+
+  mysql:
+    image: mysql:8
+    environment:
+      MYSQL_ROOT_PASSWORD: root_password
+      MYSQL_USER: db_user
+      MYSQL_PASSWORD: db_password
+      MYSQL_DATABASE: db_name
+
+
+
+    expose:
+      - "3306"
+    command: --init-file /docker-entrypoint-initdb.d/init.sql
+    volumes:
+      - ./mysql/init.sql:/docker-entrypoint-initdb.d/init.sql
+

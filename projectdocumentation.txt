@@ -1,0 +1,112 @@
+Certainly! Below is a step-by-step guide to deploy the Java application stack (Nginx, Tomcat, MySQL) using Docker Compose. The assumption is that you have a Bitbucket repository with the Java login application source code and an artifact (.war) ready.
+
+### Step 1: Clone Repository
+
+Clone your Bitbucket repository containing the Java login application source code.
+
+```bash
+git clone <your_bitbucket_repo_url>
+cd <your_repo_directory>
+```
+
+### Step 2: Customize Application Properties
+
+Update the `application.properties` file with MySQL database name and credentials to connect with the database.
+
+### Step 3: Build Java Source Code
+
+Build the Java source code and keep the artifact (.war) ready.
+
+```bash
+./gradlew build
+```
+
+### Step 4: Write Docker-Compose YAML File
+
+Create a `docker-compose.yml` file in the root of your project with the following content:
+
+```yaml
+version: '3'
+services:
+  nginx:
+    image: docker.io/nginx
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+    ports:
+      - "80:80"
+
+  tomcat:
+    image: docker.io/amazonlinux
+    volumes:
+      - ./tomcat/tomcat-users.xml:/usr/local/tomcat/conf/tomcat-users.xml
+      - ./build/libs/your-application.war:/usr/local/tomcat/webapps/your-application.war
+    expose:
+      - "8080"
+    command: bash -c "yum install -y java mysql telnet && catalina.sh run"
+
+  mysql:
+    image: docker.io/mysql
+    environment:
+      - MYSQL_DATABASE=your_database_name
+      - MYSQL_ROOT_PASSWORD=your_root_password
+      - MYSQL_PASSWORD=your_user_password
+    expose:
+      - "3306"
+    command: --init-file /docker-entrypoint-initdb.d/init.sql
+    volumes:
+      - ./mysql/init.sql:/docker-entrypoint-initdb.d/init.sql
+```
+
+### Step 5: Write Nginx Configuration
+
+Create an `nginx` folder in the root of your project and place an `nginx.conf` file with your Nginx configuration.
+
+### Step 6: Write Tomcat Configuration
+
+Create a `tomcat` folder in the root of your project and place a `tomcat-users.xml` file with your Tomcat user configuration.
+
+### Step 7: Write MySQL Initialization SQL Script
+
+Create a `mysql` folder in the root of your project and place an `init.sql` file with your MySQL schema creation script.
+
+### Step 8: Docker Compose Up
+
+Run the following command to bring up the containers:
+
+```bash
+docker-compose up -d
+```
+
+### Step 9: Validate Containers
+
+Check if the containers are running and healthy:
+
+```bash
+docker-compose ps
+```
+
+### Step 10: Login to Tomcat Container
+
+```bash
+docker exec -it <tomcat_container_id> /bin/bash
+```
+
+### Step 11: Check MySQL Access
+
+Inside the Tomcat container, check MySQL access using the MySQL client:
+
+```bash
+mysql -h mysql -u your_user -p
+```
+
+### Step 12: AWS Route 53 Configuration
+
+Create a hosted zone in AWS Route 53 and add an A record pointing to the EC2 instance Elastic IP.
+
+### Step 13: Verify Application Accessibility
+
+Open a web browser and access your application using the public domain.
+
+
+
+project reference : https://devopsrealtime.com/dockerize-a-java-web-application-using-docker-compose/
